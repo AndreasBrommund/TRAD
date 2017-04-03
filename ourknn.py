@@ -46,7 +46,7 @@ print("The size of the matrix is; rows: ",len(rows)," cols: ",len(cols))
 user = int(argv[2])
 film = int(argv[3])
 #Finding the k-nearest neighbours of user 1.
-result = knn(user,utility_matrix,702)
+result = knn(user,utility_matrix,30)
 print("knn for user",user," is")
 print(result[0])
 print("Maximum sim",result[1])
