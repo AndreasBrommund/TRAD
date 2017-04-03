@@ -15,6 +15,10 @@ dataset = pandas.read_csv(data_file,
 
 data = dataset.values
 
+#split the dataset into traning and test set
+
+
+
 #Building our utility matrix
 rows,row_pos = np.unique(data[:,0],return_inverse=True)
 cols,col_pos = np.unique(data[:,1],return_inverse=True)
@@ -25,10 +29,10 @@ utility_matrix[row_pos,col_pos] = data[:,2]
 print("The size of the matrix is; rows: ",len(rows)," cols: ",len(cols))
 print(len(utility_matrix),len(utility_matrix[0]))
 
-user = 0
-film = 0
+user = int(argv[2])
+film = int(argv[3])
 #Finding the k-nearest neighbours of user 1.
-result = knn(user,utility_matrix,5)
+result = knn(user,utility_matrix,702)
 print("knn for user",user," is")
 print(result[0])
 print("Maximum sim",result[1])
