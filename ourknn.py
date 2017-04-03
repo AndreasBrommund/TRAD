@@ -3,6 +3,7 @@ import numpy as np
 from scipy.stats.mstats import pearsonr
 from sys import argv
 from neighbourhood import knn
+from sklearn.model_selection import train_test_split
 
 #reading url/path from command line argument
 url_to_data_file = argv[1] 
@@ -16,6 +17,20 @@ dataset = pandas.read_csv(data_file,
 data = dataset.values
 
 #split the dataset into traning and test set
+
+user2 = dataset[(dataset.userId == 2)]
+
+user2_test,user2_train = train_test_split(user2,test_size=0.3,train_size=0.7)
+
+
+newDataframe = dataset[~dataset.isin(user2_test).all(1)]
+user2reallygone = newDataframe[(dataset.userId == 2)]
+
+
+
+print(user2reallygone)
+print(user2_train.sort())
+input("STOP HERE")
 
 
 
