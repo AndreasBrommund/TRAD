@@ -63,6 +63,20 @@ def rating_index(x):
             5.0:10
     }[x]
 
+def index_to_rating(x):
+    return {0:0.0,
+            1:0.5,
+            2:1.0,
+            3:1.5,
+            4:2.0,
+            5:2.5,
+            6:3.0,
+            7:3.5,
+            8:4.0,
+            9:4.5,
+            10:5.0
+    }[x]
+
 def make_prediction(neighbours,film):
     ratings = [0]*11
     for neighbour in neighbours:
@@ -72,10 +86,12 @@ def make_prediction(neighbours,film):
         weighted_rating = rating * neighbour[1]
         
         rate_index = rating_index(rating)
-        ratings[rate_index] = weighted_rating
+        ratings[rate_index] += weighted_rating
 
     prediction = max(ratings)
-    return prediction
+
+
+    return index_to_rating(ratings.index(prediction))
 
 prediction = make_prediction(neighbours_who_watched_film,0)
 print ("Prediction for film ",film, "for user",user,"is",prediction)
