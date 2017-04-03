@@ -18,6 +18,9 @@ def pearson(user1_ratings,user2_ratings):
     
     #will filter out ratings that both have not rated or
     #any version of user1 has rated this film but not user2
+    """# Look for common reviewers
+    common_reviewers = set(book_1_reviewers).intersection(book_2_reviewers)"""
+
     for i in range(len(user1_ratings)):
         if user1_ratings[i] != 0.0 and user2_ratings[i] != 0.0:
             user1_rated.append(user1_ratings[i])
