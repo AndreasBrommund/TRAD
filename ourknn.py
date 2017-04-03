@@ -27,7 +27,6 @@ utility_matrix = np.zeros((len(rows),len(cols)),dtype=data.dtype)
 utility_matrix[row_pos,col_pos] = data[:,2]
 
 print("The size of the matrix is; rows: ",len(rows)," cols: ",len(cols))
-print(len(utility_matrix),len(utility_matrix[0]))
 
 user = int(argv[2])
 film = int(argv[3])
