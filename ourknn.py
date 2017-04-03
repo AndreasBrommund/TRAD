@@ -2,8 +2,13 @@ import pandas
 import numpy as np
 from similarity import pearson
 from scipy.stats.mstats import pearsonr
+from sys import argv
 
-data_file = "100kratings.csv" 
+#reading url/path from command line argument
+url_to_data_file = argv[1] 
+
+#parsing the csv file with pandas
+data_file =  url_to_data_file
 dataset = pandas.read_csv(data_file,
         usecols=['userId','movieId','rating'],
         dtype={'rating':np.float64})
