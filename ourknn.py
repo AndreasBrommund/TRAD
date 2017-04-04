@@ -40,19 +40,61 @@ print("###################################### \n\n\n")
 
 
 #Building our utility matrix
-data = traning_data.values
-rows,row_pos = np.unique(data[:,0],return_inverse=True)
-cols,col_pos = np.unique(data[:,1],return_inverse=True)
+data = dataset.values
+rows = np.unique(data[:,0])
+cols = np.unique(data[:,1])
+
 
 utility_matrix = np.zeros((len(rows),len(cols)),dtype=data.dtype)
-utility_matrix[row_pos,col_pos] = data[:,2]
+
+movie_id_to_umatrix = {}
+umatrix_id_to_movie = {}
+
+user_id_to_umatrix = {}
+umatrix_id_to_user = {}
+
+
+
+r = 0
+for user_id in rows:
+    c = 0
+    for movie_id in cols: 
+        umatrix_id_to_movie[c] = movie_id
+        movie_id_to_umatrix[movie_id] = c
+        c+=1
+    user_id_to_umatrix[user_id] = r
+    umatrix_id_to_user[r] = user_id
+    r+=1
+
+
+
+
+for index, row in traning_data.iterrows():
+    user_id = row['userId']
+    movie_id = row['movieId']
+    rating = row['rating']
+    
+    row = user_id_to_umatrix[user_id]
+    col = movie_id_to_umatrix[movie_id]
+
+    utility_matrix[row][col] = rating
+
+num = 0
+i = 0
+for x in utility_matrix[user_id_to_umatrix[2],:]:
+    if x != 0:
+        num += 1
+        print(x," ",umatrix_id_to_movie[i])
+    i+=1
+print(num)
 
 #another sanity check
-movieId,film_index = np.unique(user_rating_test.values[:,1],return_inverse=True)
-for f in film_index:
-    assert utility_matrix[user,f] == 0, "Test data was not removed correctly"
+#movieId,film_index = np.unique(user_rating_test.values[:,1],return_inverse=True)
+for f in user_rating_test['movieId']:
+    print(utility_matrix[user_id_to_umatrix[user],movie_id_to_umatrix[f]])
+    assert utility_matrix[user_id_to_umatrix[user],movie_id_to_umatrix[f]] == 0, "Test data was not removed correctly"
 
-
+input("HEJ")
 print("The size of the matrix is; rows: ",len(rows)," cols: ",len(cols),"\n")
 
 
