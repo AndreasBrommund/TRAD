@@ -18,11 +18,12 @@ Returns:
         min similarity value 
 
 """
-def knn(user,utility_matrix,k=5):
+def knn(user,utility_matrix):
     
     user_ratings = utility_matrix[user,:]
 
-    neighbours = []
+    similar_neighbours = []
+    unsimilar_neighbours = []
     max_sim = -100
     min_sim = 100
 
@@ -38,16 +39,16 @@ def knn(user,utility_matrix,k=5):
         min_sim = min(min_sim,sim[0])
         max_sim = max(max_sim,sim[0])
         
-        neighbours.append((i,sim[0]))
+        if sim[0] > 0.1:
+            similar_neighbours.append((i,sim[0]))
+        if sim[0] < -0.1:
+            unsimilar_neighbours.append((i,sim[0]))
 
     #Optimization as per 2nd answer: 
     #http://stackoverflow.com/questions/10695139/sort-a-list-of-tuples-by-2nd-item-integer-value
 
-    neighbours = sorted(neighbours, key=itemgetter(1))
-    neighbours.reverse()
 
-    knn = neighbours[:k]
-    return  (knn,max_sim,min_sim)
+    return  (similar_neighbours,unsimilar_neighbours,max_sim,min_sim)
 
 """Find the neighbours that have watched and rated this film"""
 def neighbours_that_rated(utility_matrix,neighbours,film):

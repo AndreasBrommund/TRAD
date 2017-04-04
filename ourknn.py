@@ -99,27 +99,49 @@ print("The size of the matrix is; rows: ",len(rows)," cols: ",len(cols),"\n")
 
 
 #Finding the k-nearest neighbours of user
-result = knn(user,utility_matrix,671)
+result = knn(user_id_to_umatrix[user],utility_matrix)
 print("knn for user",user," is")
-#print(result[0],"\n")
-print("Maximum sim",result[1])
-print("Minimum sim",result[2])
+print("Similar users")
+print(result[0],"\n")
+print("Unsimilar users")
+print(result[1],"\n")
+print("Maximum sim",result[2])
+print("Minimum sim",result[3])
 print("###################################### \n\n\n")
 
-pred = []
 #Make predictions for all the test movies
-for film in film_index:
-    neighbours_who_watched_film = neighbours_that_rated(utility_matrix,result[0],film)
-    print(len(neighbours_who_watched_film), " out of ", len(result[0]), "have rated the film")
-    prediction = make_prediction(utility_matrix,neighbours_who_watched_film,film)
-    print ("Prediction for film ",film, "for user",user,"is",prediction)
-    pred.append((film,prediction))
-    print("###################################### \n\n\n")
+
+film_index = np.unique(user_rating_test.values[:,1])
+print(film_index)
+points = [0] * len(film_index)
+for neighbor in result[0]:
+    i = 0
+    for film in film_index:
+        film_id = movie_id_to_umatrix[film]
 
 
-print(list(zip(film_index,movieId)))
+        rating = utility_matrix[neighbor[0]][film_id]
+        if rating != 0:
+            if rating > 3:
+                points[i] = points[i] + 1 
+            else:
+                points[i] = points[i] -1
+        i+=1
+
+for neighbor in result[1]:
+    i = 0
+    for film in film_index:
+        film_id = movie_id_to_umatrix[film]
+        rating = utility_matrix[neighbor[0]][film_id]
+        if rating != 0:
+            if rating > 3:
+                points[i] = points[i] - 0.5 
+            else: 
+                points[i] = points[i] + 0.5
+        i+=1
+print(points)
+print(list(zip(points,film_index)))
 print("Correct ratings\n",user_rating_test)
-print("Predicted ratings \n",pred)
 
 
 
