@@ -54,8 +54,8 @@ def neighbours_that_rated(utility_matrix,neighbours,film):
     result = []
     for neighbour in neighbours:
         index = neighbour[0]
-        print("Rating",utility_matrix[index,film])
         if utility_matrix[index,film] > 0.0:
+            print("Rating",utility_matrix[index,film])
             result.append(neighbour)
     return result
 
