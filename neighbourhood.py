@@ -48,3 +48,19 @@ def knn(user,utility_matrix,k=5):
 
     knn = neighbours[:k]
     return  (knn,max_sim,min_sim)
+
+"""Find the neighbours that have watched and rated this film"""
+def neighbours_that_rated(utility_matrix,neighbours,film):
+    result = []
+    for neighbour in neighbours:
+        index = neighbour[0]
+        print("Rating",utility_matrix[index,film])
+        if utility_matrix[index,film] > 0.0:
+            result.append(neighbour)
+    return result
+
+
+
+
+
+
