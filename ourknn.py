@@ -160,14 +160,30 @@ for index in range(len(film_index)):
 
 
 print("our recommendations")
-print(recommendations)
 
-sorted_list = sorted(recommendations,key=itemgetter(1),reverse=True)
-
-print(sorted_list)
+recommendations_sorted = sorted(recommendations,key=itemgetter(1),reverse=True)
+good_films = user_rating_test[(user_rating_test.rating > 3)]
 print("Correct ratings\n",user_rating_test)
+print("Good films\n",good_films)
 
 
+
+final_films_to_recomend = []
+if  len(good_films) < 5: 
+    final_films_to_recomend = recommendations_sorted[:len(good_films) ] 
+else:   
+    final_films_to_recomend = recommendations_sorted[:5]
+
+print(final_films_to_recomend)
+
+hits = 0
+for rating in final_films_to_recomend:
+
+    hit = good_films[(good_films.movieId == rating[0])]
+
+    if len(hit) == 1:
+        hits += 1
+print(hits/len(final_films_to_recomend))
 
 
 
