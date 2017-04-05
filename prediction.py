@@ -1,50 +1,60 @@
+import numpy as np 
+from operator import itemgetter
 
+#Make predictions for all the test movies
+def predict(test,umatrix,movie_to_matrix,sim_users,unsim_users):
+    
+    film_index = np.unique(test.values[:,1])
 
-"""make prediction
-predictions the rating for a given film based
-on neighbours using k-nearest neighbour classifiction"""
-def make_prediction(utility_matrix,neighbours,film):
-    ratings = [0]*11
-    for neighbour in neighbours:
-        index = neighbour[0]
+    positive_counter = [0] * len(film_index)
+    negative_counter = [0] * len(film_index)
+    
+    #Add point for similar users
+    for neighbor in sim_users:
+        i = 0
         
-        rating = utility_matrix[index,film]
-        weighted_rating = rating * neighbour[1]
+        for film in film_index:
+            film_id = movie_to_matrix[film]
+            rating = umatrix[neighbor[0]][film_id]
+            
+            if rating != 0:
+                if rating > 3:
+                    positive_counter[i] = positive_counter[i] + 1 
+                else:
+                    negative_counter[i] = negative_counter[i] +1
+            i+=1
+
+    #Add points for unsimilar users
+    for neighbor in unsim_users:
+        i = 0
         
-        result_index = rating_to_index(rating)
-        ratings[result_index] += weighted_rating
+        for film in film_index:
+            film_id = movie_to_matrix[film]
+            rating = umatrix[neighbor[0]][film_id]
+            
+            if rating != 0:
+                if rating > 3:
+                    negative_counter[i] =negative_counter[i] + 0.5 
+                else: 
+                    positive_counter[i] = positive_counter[i] + 0.5
+            i+=1
 
-    #find the rating the was classified, given the highest vote
-    prediction = max(ratings)
-    return index_to_rating(ratings.index(prediction))
+    return calculate_percentage(positive_counter,negative_counter,film_index)
 
-"""Maps from array index to rating
-and vice versa"""
-def rating_to_index(x):
-    return {0.0:0,
-            0.5:1,
-            1.0:2,
-            1.5:3,
-            2.0:4,
-            2.5:5,
-            3.0:6,
-            3.5:7,
-            4.0:8,
-            4.5:9,
-            5.0:10
-    }[x]
+def calculate_percentage(positive_counter,negative_counter,film_index):
+    recommendations = []
 
-def index_to_rating(x):
-    return {0:0.0,
-            1:0.5,
-            2:1.0,
-            3:1.5,
-            4:2.0,
-            5:2.5,
-            6:3.0,
-            7:3.5,
-            8:4.0,
-            9:4.5,
-            10:5.0
-    }[x]
+    for index in range(len(film_index)):
+        positive = positive_counter[index]
+        negative = negative_counter[index]
+        numbers_of_ratings = positive+negative
+            
+        if numbers_of_ratings > 0:
+            percentage = positive/numbers_of_ratings
+            #print(percentage)
 
+            if percentage >= 0.5:
+                recommendations.append((film_index[index],percentage))
+    
+    return sorted(recommendations,key=itemgetter(1),reverse=True)
+    
