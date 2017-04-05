@@ -10,9 +10,12 @@ from sklearn.model_selection import train_test_split
 
 def main():
     url_to_data_file = argv[1]
-    dataset = read_csv(url_to_data_file)
+    sample_size = int(argv[2])
 
-    users = generate_user_sample(671,20)
+    dataset = read_csv(url_to_data_file)
+    population_size = len(np.unique(dataset.values[:,0]))
+    print(population_size)
+    users = generate_user_sample(population_size,sample_size)
     
     hits = []
 
@@ -42,6 +45,10 @@ def main():
 
         film_recommendation = recommendations(test,predictions)
         
+        if len(film_recommendation) == 0:
+            hits.append(0)
+            continue
+
         hit_rate = calculate_hit_rate(test,film_recommendation) 
 
         hits.append(hit_rate)
