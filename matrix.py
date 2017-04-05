@@ -17,16 +17,21 @@ def build_matrix(dataset,traning_data):
     umatrix_id_to_user = {}
 
     #Calculate the mapping
+
+
     row = 0
     for user_id in rows:
-        col = 0
-        for movie_id in cols: 
-            umatrix_id_to_movie[col] = movie_id
-            movie_id_to_umatrix[movie_id] = col
-            col+=1
         user_id_to_umatrix[user_id] = row
         umatrix_id_to_user[row] = user_id
         row+=1
+
+    col = 0
+    for movie_id in cols: 
+        umatrix_id_to_movie[col] = movie_id
+        movie_id_to_umatrix[movie_id] = col
+        col+=1
+
+
 
     #Add values to the utility matrix
     for index, row in traning_data.iterrows():
