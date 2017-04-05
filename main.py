@@ -45,6 +45,10 @@ def main():
 
         film_recommendation = recommendations(test,predictions)
         
+        if len(film_recommendation) == 0:
+            hits.append(0)
+            continue
+
         hit_rate = calculate_hit_rate(test,film_recommendation) 
 
         hits.append(hit_rate)

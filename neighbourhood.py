@@ -39,9 +39,9 @@ def knn(user,utility_matrix):
         min_sim = min(min_sim,sim[0])
         max_sim = max(max_sim,sim[0])
         
-        if sim[0] > 0.1:
+        if sim[0] > 0.3:
             similar_neighbours.append((i,sim[0]))
-        if sim[0] < -0.1:
+        if sim[0] < -0.3:
             unsimilar_neighbours.append((i,sim[0]))
 
     #Optimization as per 2nd answer: 
