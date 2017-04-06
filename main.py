@@ -80,7 +80,7 @@ def main():
         
         matrix.add(test,umatrix,user_to_matrix,movie_to_matrix)
 
-    print("Predictions\n",list_precisions)
+    print("Precisions\n",list_precisions)
     print("Recalls\n",list_recalls)
     print("Total hits: ",total_hits)
     print("Total recommendations: ",total_recommendations)
@@ -91,12 +91,12 @@ def main():
     print("Median: ",np.median(list_precisions))
     print("Overall: ",total_hits/total_recommendations)
         
-    print("\nRecal")
+    print("\nRecall")
     print("Mean: ",np.mean(list_recalls))
     print("Median: ",np.median(list_recalls))
     print("Overall: ",total_hits/total_good_films)
 
-    print("Population size: ",population_size)
+    print("\nPopulation size: ",population_size)
     print("Sample size: ",sample_size)
 
 
