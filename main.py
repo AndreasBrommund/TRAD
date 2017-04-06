@@ -4,7 +4,7 @@ import numpy as np
 from sys import argv
 from neighbourhood import knn
 from prediction import predict
-from matrix import build_matrix
+import matrix 
 from operator import itemgetter
 from sklearn.model_selection import train_test_split
 
@@ -19,13 +19,21 @@ def main():
     
     hits = []
 
+    
+     
+    #Get all umatrix and all the mapings
+    
+    umatrix,movie_to_matrix,matrix_to_movie,user_to_matrix,matrix_to_user = matrix.build_matrix(dataset)
+
     for i,user in enumerate(users):
+
+
+        
         print("User ",i, " of ", len(users))
 
         traning, test = generate_traning_and_test(user,dataset) 
 
-        #Get all umatrix and all the mapings
-        umatrix,movie_to_matrix,matrix_to_movie,user_to_matrix,matrix_to_user = build_matrix(dataset,traning)
+        matrix.remove(test,umatrix,user_to_matrix,movie_to_matrix)
         
         #Get knn
         sim_users,unsim_users,max_sim,min_sim = knn(user_to_matrix[user],umatrix)
@@ -41,17 +49,23 @@ def main():
 
         if len(predictions) == 0:
             hits.append(0)
+            matrix.add(test,umatrix,user_to_matrix,movie_to_matrix)
+
             continue
 
         film_recommendation = recommendations(test,predictions)
         
         if len(film_recommendation) == 0:
             hits.append(0)
+            matrix.add(test,umatrix,user_to_matrix,movie_to_matrix)
+
             continue
 
         hit_rate = calculate_hit_rate(test,film_recommendation) 
 
         hits.append(hit_rate)
+        matrix.add(test,umatrix,user_to_matrix,movie_to_matrix)
+
 
     print(hits)
     print(np.mean(hits))

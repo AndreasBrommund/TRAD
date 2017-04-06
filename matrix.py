@@ -1,6 +1,6 @@
 import numpy as np
 
-def build_matrix(dataset,traning_data):
+def build_matrix(dataset):
     data = dataset.values
     rows = np.unique(data[:,0])
     cols = np.unique(data[:,1])
@@ -34,7 +34,7 @@ def build_matrix(dataset,traning_data):
 
 
     #Add values to the utility matrix
-    for index, row in traning_data.iterrows():
+    for index, row in dataset.iterrows():
         user_id = row['userId']
         movie_id = row['movieId']
         rating = row['rating']
@@ -45,6 +45,32 @@ def build_matrix(dataset,traning_data):
         utility_matrix[row][col] = rating
     
     return utility_matrix, movie_id_to_umatrix, umatrix_id_to_movie, user_id_to_umatrix, umatrix_id_to_user
+
+def remove(test,matrix,user_id_to_umatrix,movie_id_to_umatrix):
+    
+    for index, row in test.iterrows():
+        user_id = row['userId']
+        movie_id = row['movieId']
+        rating = row['rating']
+
+
+        row = user_id_to_umatrix[user_id]
+        col = movie_id_to_umatrix[movie_id]
+        
+        matrix[row][col] = 0.0
+
+
+def add(test,matrix,user_id_to_umatrix,movie_id_to_umatrix):
+    for index, row in test.iterrows():
+        user_id = row['userId']
+        movie_id = row['movieId']
+        rating = row['rating']
+
+        row = user_id_to_umatrix[user_id]
+        col = movie_id_to_umatrix[movie_id]
+        
+        matrix[row][col] = rating
+
 
 
      
