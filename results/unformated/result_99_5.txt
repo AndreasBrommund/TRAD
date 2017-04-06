@@ -10,3 +10,5 @@ done: 16:40
 0.8 
 
 99 % grad med 5 % intervall
+
+390
