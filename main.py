@@ -88,8 +88,7 @@ def main():
     print("Precisions\n",list_precisions_content)
     print("Recalls\n",list_recalls_content)
 
-    print("Result collaborative:")
-
+    print("\nResult collaborative:")
     print("Total hits: ",total_hits_collaborative)
     print("Total recommendations: ",total_recommendations_collaborative)
     print("Total good films: ",total_good_films_collaborative)
@@ -104,8 +103,7 @@ def main():
     print("Median: ",np.median(list_recalls_collaborative))
     print("Overall: ",total_hits_collaborative/total_good_films_collaborative)
 
-    print("Result content:")
-
+    print("\nResult content:")
     print("Total hits: ",total_hits_content)
     print("Total recommendations: ",total_recommendations_content)
     print("Total good films: ",total_good_films_content)
