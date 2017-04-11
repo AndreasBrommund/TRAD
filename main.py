@@ -57,8 +57,7 @@ def main():
         #Vars
         predicted_films_collaborative = []
         predicted_films_content = []
-
-
+        
         #Collaborative part
         precision,recall,hits,recommended_films,good_films,predicted_films_collaborative = collaborative(user,umatrix,movie_to_matrix,user_to_matrix,training,test)
         
@@ -79,52 +78,58 @@ def main():
         total_good_films_content += good_films
 
         #Hybrid part
-        #print(predicted_films_collaborative)
-        #print(predicted_films_content)
+        print(predicted_films_collaborative,"\n")
+        print(predicted_films_content,"\n")
+        print(min(good_films,5))
+        print(hybrid(predicted_films_collaborative,predicted_films_content,min(good_films,5)))           
+        
+        
 
         #Clean 
         matrix.add(test,umatrix,user_to_matrix,movie_to_matrix)
 
-    print("Raw data collaborative\n")
-    print("Precisions\n",list_precisions_collaborative)
-    print("Recalls\n",list_recalls_collaborative)
 
-    print("Raw data content\n")
-    print("Precisions\n",list_precisions_content)
-    print("Recalls\n",list_recalls_content)
+    if False:
+        print("Raw data collaborative\n")
+        print("Precisions\n",list_precisions_collaborative)
+        print("Recalls\n",list_recalls_collaborative)
 
-    print("\nResult collaborative:")
-    print("Total hits: ",total_hits_collaborative)
-    print("Total recommendations: ",total_recommendations_collaborative)
-    print("Total good films: ",total_good_films_collaborative)
+        print("Raw data content\n")
+        print("Precisions\n",list_precisions_content)
+        print("Recalls\n",list_recalls_content)
 
-    print("\nPredictions")
-    print("Mean: ",np.mean(list_precisions_collaborative))
-    print("Median: ",np.median(list_precisions_collaborative))
-    print("Overall: ",total_hits_collaborative/total_recommendations_collaborative)
-        
-    print("\nRecall")
-    print("Mean: ",np.mean(list_recalls_collaborative))
-    print("Median: ",np.median(list_recalls_collaborative))
-    print("Overall: ",total_hits_collaborative/total_good_films_collaborative)
+        print("\nResult collaborative:")
+        print("Total hits: ",total_hits_collaborative)
+        print("Total recommendations: ",total_recommendations_collaborative)
+        print("Total good films: ",total_good_films_collaborative)
 
-    print("\nResult content:")
-    print("Total hits: ",total_hits_content)
-    print("Total recommendations: ",total_recommendations_content)
-    print("Total good films: ",total_good_films_content)
+        print("\nPredictions")
+        print("Mean: ",np.mean(list_precisions_collaborative))
+        print("Median: ",np.median(list_precisions_collaborative))
+        print("Overall: ",total_hits_collaborative/total_recommendations_collaborative)
+            
+        print("\nRecall")
+        print("Mean: ",np.mean(list_recalls_collaborative))
+        print("Median: ",np.median(list_recalls_collaborative))
+        print("Overall: ",total_hits_collaborative/total_good_films_collaborative)
 
-    print("\nPredictions")
-    print("Mean: ",np.mean(list_precisions_content))
-    print("Median: ",np.median(list_precisions_content))
-    print("Overall: ",total_hits_content/total_recommendations_content)
-        
-    print("\nRecall")
-    print("Mean: ",np.mean(list_recalls_content))
-    print("Median: ",np.median(list_recalls_content))
-    print("Overall: ",total_hits_content/total_good_films_content)
+        print("\nResult content:")
+        print("Total hits: ",total_hits_content)
+        print("Total recommendations: ",total_recommendations_content)
+        print("Total good films: ",total_good_films_content)
 
-    print("\nPopulation size: ",population_size)
-    print("Sample size: ",sample_size)
+        print("\nPredictions")
+        print("Mean: ",np.mean(list_precisions_content))
+        print("Median: ",np.median(list_precisions_content))
+        print("Overall: ",total_hits_content/total_recommendations_content)
+            
+        print("\nRecall")
+        print("Mean: ",np.mean(list_recalls_content))
+        print("Median: ",np.median(list_recalls_content))
+        print("Overall: ",total_hits_content/total_good_films_content)
+
+        print("\nPopulation size: ",population_size)
+        print("Sample size: ",sample_size)
 
 
 
@@ -178,13 +183,74 @@ def content_predict(user,training,test,film_dataset,depth,trees):
 
     for index,value in enumerate(ratings):
         if value > 3:
-            res.append((film_id_test[index],1))
+            res.append((int(film_id_test[index]),1.0))
 
     if len(res) == 0:
         return 0,0,0,0,len(test[(test.rating > 3)]),res
 
     precision,recall,hits,recommended_films,good_films = calculate_hit_rate(test,res)
     return precision,recall,hits,recommended_films,good_films,res
+
+
+def hybrid(predicted_films_collaborative,predicted_films_content,films_to_predict):
+    predicted_films_hybrid = []
+
+    for index,value in enumerate(predicted_films_collaborative):
+        film_id = value[0]
+        film_ratio = value[1]
+        
+        for i,v in enumerate(predicted_films_content):
+            
+            if(v[0] == film_id):
+                if len(predicted_films_hybrid) < films_to_predict:
+                    predicted_films_hybrid.append(value)
+    
+    
+    num = 0
+    for i in predicted_films_collaborative:
+        should_contain = False
+
+        for j in predicted_films_content:
+            if i[0] == j[0]:
+                should_contain = True
+                       
+        if should_contain:
+            num += 1
+
+        if should_contain and num <= films_to_predict:
+            assert i in predicted_films_hybrid , "Not in hybrid list"
+        else:
+            assert not (i in predicted_films_hybrid), "In hybrid list"
+
+
+    #Remove films 
+    for v in predicted_films_hybrid:
+        predicted_films_collaborative.remove(v)
+        predicted_films_content.remove((v[0],1))
+
+    #Sanity check
+    for i in predicted_films_hybrid:
+        for j in predicted_films_collaborative:
+            assert i[0] != j[0], "Not removed colllabrative"
+
+    
+    for i in predicted_films_hybrid:
+        for j in predicted_films_content:
+            assert i[0] != j[0], "Not removed conetent"
+    
+    
+    for v in predicted_films_collaborative:
+        if v[1] >= 0.8 and len(predicted_films_hybrid) < films_to_predict:
+            predicted_films_hybrid.append(v)
+
+    #Sanity check
+    assert len(predicted_films_hybrid) <= films_to_predict, "To many films" 
+
+
+    assert len(set(predicted_films_hybrid)) == len(predicted_films_hybrid), "Have duplicates"
+
+    return predicted_films_hybrid
+
 
 def read_csv(path):
     return pandas.read_csv(path,
