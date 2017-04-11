@@ -53,7 +53,7 @@ def calculate_percentage(positive_counter,negative_counter,film_index):
             percentage = positive/numbers_of_ratings
 
             if percentage >= 0.5:
-                recommendations.append((film_index[index],percentage))
+                recommendations.append((int(film_index[index]),percentage))
     
     return sorted(recommendations,key=itemgetter(1),reverse=True)
     
