@@ -54,9 +54,13 @@ def main():
             assert umatrix[user_to_matrix[user],movie_to_matrix[f]] == 0, "Test data was not removed correctly"
 
        
+        #Vars
+        predicted_films_collaborative = []
+        predicted_films_content = []
+
 
         #Collaborative part
-        precision,recall,hits,recommended_films,good_films = collaborative(user,umatrix,movie_to_matrix,user_to_matrix,training,test)
+        precision,recall,hits,recommended_films,good_films,predicted_films_collaborative = collaborative(user,umatrix,movie_to_matrix,user_to_matrix,training,test)
         
         list_precisions_collaborative.append(precision)
         list_recalls_collaborative.append(recall)
@@ -66,7 +70,7 @@ def main():
 
         #Content part
 
-        precision,recall,hits,recommended_films,good_films = content_predict(user,training,test,film_dataset,3,200)
+        precision,recall,hits,recommended_films,good_films,predicted_films_content = content_predict(user,training,test,film_dataset,3,200)
                     
         list_precisions_content.append(precision)
         list_recalls_content.append(recall)
@@ -75,7 +79,8 @@ def main():
         total_good_films_content += good_films
 
         #Hybrid part
-
+        #print(predicted_films_collaborative)
+        #print(predicted_films_content)
 
         #Clean 
         matrix.add(test,umatrix,user_to_matrix,movie_to_matrix)
@@ -138,9 +143,10 @@ def collaborative(user,umatrix,movie_to_matrix,user_to_matrix,traning,test):
 
     if len(predictions) == 0:
         #Precision, Recal, hits, recommended_films, good_films
-        return 0,0,0,0,len(test[(test.rating > 3)])
+        return 0,0,0,0,len(test[(test.rating > 3)]),predictions
         
-    return calculate_hit_rate(test,predictions) 
+    precision,recall,hits,recommended_films,good_films = calculate_hit_rate(test,predictions)
+    return precision,recall,hits,recommended_films,good_films,predictions 
 
 #Return: Precision, Recal, hits, recommended_films, good_films
 def content_predict(user,training,test,film_dataset,depth,trees): 
@@ -175,9 +181,10 @@ def content_predict(user,training,test,film_dataset,depth,trees):
             res.append((film_id_test[index],1))
 
     if len(res) == 0:
-        return 0,0,0,0,len(test[(test.rating > 3)])
+        return 0,0,0,0,len(test[(test.rating > 3)]),res
 
-    return calculate_hit_rate(test,res) 
+    precision,recall,hits,recommended_films,good_films = calculate_hit_rate(test,res)
+    return precision,recall,hits,recommended_films,good_films,res
 
 def read_csv(path):
     return pandas.read_csv(path,
