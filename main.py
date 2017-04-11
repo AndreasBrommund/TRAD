@@ -36,6 +36,11 @@ def main():
     total_recommendations_content = 0
     total_good_films_content = 0
 
+    list_hit_rate_hybrid = []
+    numbers_of_zero_hit_rates_hybrid = 0
+    total_hits_hybrid = 0
+    total_recommendations_hybrid = 0
+
 
     #Get all umatrix and all the mapings
     print("Start: build umatrix", file=sys.stderr) 
@@ -78,18 +83,39 @@ def main():
         total_good_films_content += good_films
 
         #Hybrid part
-        print(predicted_films_collaborative,"\n")
-        print(predicted_films_content,"\n")
-        print(min(good_films,5))
-        print(hybrid(predicted_films_collaborative,predicted_films_content,min(good_films,5)))           
+        predicted_films_hybrid = hybrid(predicted_films_collaborative,predicted_films_content,min(good_films,5))
+
+        for top in top_five(training):
+            if len(predicted_films_hybrid) < min(good_films,5):
+                add = True
+                for f in predicted_films_hybrid:
+                    if f[0] == top[0]:
+                        add = False
+                if add:
+                    predicted_films_hybrid.append(top)
+                    
+                        
+
+
+
+        assert len(predicted_films_hybrid) == min(good_films,5),"Not the right size"
+        assert len(set(predicted_films_hybrid)) == len(predicted_films_hybrid), "Have duplicates"
         
+        hit_rate,hits,recommended_films = calculate_stats_hybrid(test,predicted_films_hybrid)
+        
+        list_hit_rate_hybrid.append(hit_rate)
+        if hits == 0:
+            numbers_of_zero_hit_rates_hybrid += 1
+
+        total_hits_hybrid += hits
+        total_recommendations_hybrid += recommended_films
         
 
         #Clean 
         matrix.add(test,umatrix,user_to_matrix,movie_to_matrix)
 
 
-    if False:
+    if True:
         print("Raw data collaborative\n")
         print("Precisions\n",list_precisions_collaborative)
         print("Recalls\n",list_recalls_collaborative)
@@ -97,6 +123,9 @@ def main():
         print("Raw data content\n")
         print("Precisions\n",list_precisions_content)
         print("Recalls\n",list_recalls_content)
+
+        print("Raw data hybrid\n")
+        print("Hit rate\n",list_hit_rate_hybrid)
 
         print("\nResult collaborative:")
         print("Total hits: ",total_hits_collaborative)
@@ -127,6 +156,14 @@ def main():
         print("Mean: ",np.mean(list_recalls_content))
         print("Median: ",np.median(list_recalls_content))
         print("Overall: ",total_hits_content/total_good_films_content)
+
+
+        print("\nResult hybrid:")
+        print("Mean: ",np.mean(list_hit_rate_hybrid))
+        print("Median: ",np.median(list_hit_rate_hybrid))
+        print("Overall: ",total_hits_hybrid/total_recommendations_hybrid)
+        print("Users with null success rate: ",numbers_of_zero_hit_rates_hybrid)
+        print("Users with null success rate (percentage): ",numbers_of_zero_hit_rates_hybrid/sample_size)
 
         print("\nPopulation size: ",population_size)
         print("Sample size: ",sample_size)
@@ -298,5 +335,35 @@ def calculate_hit_rate(test,films_to_recommend):
     return precision,recall,hits,len(films_to_recommend),len(good_films)
 
 
+def calculate_stats_hybrid(test,predicted_films_hybrid):
+    assert len(predicted_films_hybrid) <= 5, "Len to large"
+    
+    good_films = test[(test.rating > 3)]
+    
 
+    hits = 0
+    for rating in predicted_films_hybrid:
+        hit = good_films[(good_films.movieId == rating[0])]
+
+        if len(hit) == 1:
+            hits += 1
+
+    hit_rate = 0
+    
+    if len(predicted_films_hybrid) != 0:
+        hit_rate = hits/len(predicted_films_hybrid)
+
+    return hit_rate,hits,len(predicted_films_hybrid)
+
+
+def top_five(ratings):
+    group = ratings.groupby(['movieId'])['rating'].sum().reset_index()
+    sort = group.sort_values('rating',ascending=False)
+
+    result=[]
+    for i,v in sort[:5].iterrows():
+        result.append((int(v['movieId']),-1))
+
+    return result
+    
 if __name__ == "__main__": main()
