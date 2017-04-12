@@ -64,7 +64,7 @@ def main():
         predicted_films_content = []
         
         #Collaborative part
-        precision,recall,hits,recommended_films,good_films,predicted_films_collaborative = collaborative(user,umatrix,movie_to_matrix,user_to_matrix,training,test)
+        precision,recall,hits,recommended_films,good_films,predicted_films_collaborative,num_users_collaborative = collaborative(user,umatrix,movie_to_matrix,user_to_matrix,training,test)
         
         list_precisions_collaborative.append(precision)
         list_recalls_collaborative.append(recall)
@@ -74,7 +74,7 @@ def main():
 
         #Content part
 
-        precision,recall,hits,recommended_films,good_films,predicted_films_content = content_predict(user,training,test,film_dataset,3,200)
+        precision,recall,hits,recommended_films,good_films,predicted_films_content = content_predict(user,training,test,film_dataset,4,400)
                     
         list_precisions_content.append(precision)
         list_recalls_content.append(recall)
@@ -83,7 +83,7 @@ def main():
         total_good_films_content += good_films
 
         #Hybrid part
-        predicted_films_hybrid = hybrid(predicted_films_collaborative,predicted_films_content,min(good_films,5))
+        predicted_films_hybrid = hybrid(predicted_films_collaborative,predicted_films_content,min(good_films,5),num_users_collaborative)
 
         for top in top_five(training):
             if len(predicted_films_hybrid) < min(good_films,5):
@@ -173,22 +173,20 @@ def main():
 
 
 
-#Return: Precision, Recal, hits, recommended_films, good_films
+#Return: Precision, Recal, hits, recommended_films, good_films, numbers of users
 def collaborative(user,umatrix,movie_to_matrix,user_to_matrix,traning,test):
     #Get knn
     sim_users,unsim_users,max_sim,min_sim = knn(user_to_matrix[user],umatrix)
 
-    print("Num of sim users: ",len(sim_users)," Num of unsim users: ",len(unsim_users),file=sys.stderr)
-    print("Max: ",max_sim," Min: ",min_sim,file=sys.stderr)
 
-    predictions = predict(test,umatrix,movie_to_matrix,sim_users,unsim_users)
+    predictions,users = predict(test,umatrix,movie_to_matrix,sim_users,unsim_users)
 
     if len(predictions) == 0:
         #Precision, Recal, hits, recommended_films, good_films
-        return 0,0,0,0,len(test[(test.rating > 3)]),predictions
+        return 0,0,0,0,len(test[(test.rating > 3)]),predictions,[0]
         
     precision,recall,hits,recommended_films,good_films = calculate_hit_rate(test,predictions)
-    return precision,recall,hits,recommended_films,good_films,predictions 
+    return precision,recall,hits,recommended_films,good_films,predictions,users 
 
 #Return: Precision, Recal, hits, recommended_films, good_films
 def content_predict(user,training,test,film_dataset,depth,trees): 
@@ -229,7 +227,7 @@ def content_predict(user,training,test,film_dataset,depth,trees):
     return precision,recall,hits,recommended_films,good_films,res
 
 
-def hybrid(predicted_films_collaborative,predicted_films_content,films_to_predict):
+def hybrid(predicted_films_collaborative,predicted_films_content,films_to_predict,num_users):
     predicted_films_hybrid = []
 
     for index,value in enumerate(predicted_films_collaborative):
@@ -238,11 +236,11 @@ def hybrid(predicted_films_collaborative,predicted_films_content,films_to_predic
         
         for i,v in enumerate(predicted_films_content):
             
-            if(v[0] == film_id):
+            if v[0] == film_id:
                 if len(predicted_films_hybrid) < films_to_predict:
                     predicted_films_hybrid.append(value)
     
-    
+
     num = 0
     for i in predicted_films_collaborative:
         should_contain = False
@@ -259,11 +257,52 @@ def hybrid(predicted_films_collaborative,predicted_films_content,films_to_predic
         else:
             assert not (i in predicted_films_hybrid), "In hybrid list"
 
-
+    
     #Remove films 
     for v in predicted_films_hybrid:
         predicted_films_collaborative.remove(v)
+        predicted_films_content.remove((v[0],1))    
+
+    new_added = []
+    for i,v in enumerate(predicted_films_collaborative):
+        if v[1] >= 0.7 and len(predicted_films_hybrid) < films_to_predict:
+            predicted_films_hybrid.append(v)
+            new_added.append(v)
+
+    for v in new_added:
+        predicted_films_collaborative.remove(v)
+
+
+
+    
+
+
+
+    new_added = []
+    for i,v in enumerate(predicted_films_collaborative):
+        if len(predicted_films_hybrid) < films_to_predict:
+            predicted_films_hybrid.append(v)
+            new_added.append(v)
+
+    for v in new_added:
+        predicted_films_collaborative.remove(v)
+
+
+
+
+
+    new_added = []
+    for i,v in enumerate(predicted_films_content):
+        if len(predicted_films_hybrid) < films_to_predict:
+            predicted_films_hybrid.append(v)
+            new_added.append(v)
+
+
+    for v in new_added:
         predicted_films_content.remove((v[0],1))
+
+    
+    
 
     #Sanity check
     for i in predicted_films_hybrid:
@@ -274,13 +313,11 @@ def hybrid(predicted_films_collaborative,predicted_films_content,films_to_predic
     for i in predicted_films_hybrid:
         for j in predicted_films_content:
             assert i[0] != j[0], "Not removed conetent"
-    
-    
-    for v in predicted_films_collaborative:
-        if v[1] >= 0.8 and len(predicted_films_hybrid) < films_to_predict:
-            predicted_films_hybrid.append(v)
 
-    #Sanity check
+
+
+
+    #Sanity check   
     assert len(predicted_films_hybrid) <= films_to_predict, "To many films" 
 
 
@@ -340,7 +377,6 @@ def calculate_stats_hybrid(test,predicted_films_hybrid):
     
     good_films = test[(test.rating > 3)]
     
-
     hits = 0
     for rating in predicted_films_hybrid:
         hit = good_films[(good_films.movieId == rating[0])]
@@ -350,8 +386,10 @@ def calculate_stats_hybrid(test,predicted_films_hybrid):
 
     hit_rate = 0
     
+
     if len(predicted_films_hybrid) != 0:
         hit_rate = hits/len(predicted_films_hybrid)
+    
 
     return hit_rate,hits,len(predicted_films_hybrid)
 
