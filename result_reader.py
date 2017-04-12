@@ -10,7 +10,7 @@ path = argv[1]
 raw_data = []
 lines = []
 nr_lines = 0
-labels = ["Collaborative","Collaborative","Content","Content"]
+labels = ["Collaborative","Collaborative","Content","Content","Hybrid"]
 
 
 
