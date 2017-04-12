@@ -8,7 +8,9 @@ def predict(test,umatrix,movie_to_matrix,sim_users,unsim_users):
 
     positive_counter = [0] * len(film_index)
     negative_counter = [0] * len(film_index)
-    
+   
+    users = [0] * len(film_index)
+
     #Add point for similar users
     for neighbor in sim_users:
         i = 0
@@ -18,6 +20,7 @@ def predict(test,umatrix,movie_to_matrix,sim_users,unsim_users):
             rating = umatrix[neighbor[0]][film_id]
             
             if rating != 0:
+                users[i] += 1
                 if rating > 3:
                     positive_counter[i] = positive_counter[i] + 1 
                 else:
@@ -33,13 +36,15 @@ def predict(test,umatrix,movie_to_matrix,sim_users,unsim_users):
             rating = umatrix[neighbor[0]][film_id]
             
             if rating != 0:
+                users[i] += 1
                 if rating > 3:
                     negative_counter[i] =negative_counter[i] + 0.5 
                 else: 
                     positive_counter[i] = positive_counter[i] + 0.5
             i+=1
 
-    return calculate_percentage(positive_counter,negative_counter,film_index)
+    res = calculate_percentage(positive_counter,negative_counter,film_index)
+    return res,users
 
 def calculate_percentage(positive_counter,negative_counter,film_index):
     recommendations = []
